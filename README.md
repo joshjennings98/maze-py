@@ -1,2 +1,8 @@
 # maze-py
-Generate and print a maze using Kruskal's Algorithm. Call with: python maze.py 'width' 'height'
+
+Generate and print a maze in the terminal using Kruskal's Algorithm. 
+
+Call with: 
+```python
+python maze.py 'width' 'height'
+```
