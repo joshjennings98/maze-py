@@ -58,9 +58,14 @@ def generate_maze(n, m):
 
   return maze
 
-# get command line arguments and generate the maze
-width = int(sys.argv[2])
-height = int(sys.argv[1])
-maze = generate_maze(width, height)
+def main():
+    # get command line arguments and generate the maze
+    width = int(sys.argv[2])
+    height = int(sys.argv[1])
+    maze = generate_maze(width, height)
 
-printMaze(maze)
+    printMaze(maze)
+
+if __name__ == "__main__":
+    main()
+    
