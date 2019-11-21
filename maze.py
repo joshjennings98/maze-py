@@ -4,6 +4,7 @@ import numpy as np
 import random
 from os import system
 import sys
+import time
 
 # function to print the maze
 def printMaze(maze):
@@ -12,7 +13,9 @@ def printMaze(maze):
     for j in range(len(maze[i])):
       if maze[i][j] == 0:
         print('██', end="")
-      elif maze[i][j] == 1:
+      if maze[i][j] == 6:
+        print('@>', end="")
+      elif maze[i][j] == 1 or maze[i][j] == 4 or maze[i][j] == 5:
         print('  ', end="")
     print('')
 
@@ -47,24 +50,94 @@ def generate_maze(n, m):
       cells[p] = q
 
   # initialise the two types of border
-  vertBorders = np.zeros((n + 3,), dtype=int)
+  vertBordersStart = np.zeros((n + 3,), dtype=int)
+  vertBordersEnd = vertBordersStart.copy()
+  vertBordersStart[random.randint(1, n // 2) * 2 - 1] = 4 # Create entrance
+  vertBordersEnd[random.randint(1, n // 2) * 2 - 1] = 5 # Create exit
+
   horiBorders = np.zeros((m + 1,), dtype=int)
 
   # pad maze with walls
   maze = np.concatenate(([horiBorders], maze), axis=0)
   maze = np.concatenate((maze, [horiBorders]), axis=0)
-  maze = np.insert(maze, 0, vertBorders, axis=1)
-  maze = np.insert(maze, len(maze[0]), vertBorders, axis=1)
+  maze = np.insert(maze, 0, vertBordersStart, axis=1)
+  maze = np.insert(maze, len(maze[0]), vertBordersEnd, axis=1)
 
   return maze
+
+def naiveSolveMaze (maze):
+  def move(loc, dir, maze):
+    newLoc = loc
+
+    if (maze[loc[0]][loc[1] + 1]) == 5:
+      maze[loc[0]][loc[1] + 1] = 6
+      maze[loc[0]][loc[1]] = 1
+      return maze, loc, dir, True
+    
+    if dir == 1:
+      if maze[loc[0] + 1][loc[1]] == 1:
+        dir += 1
+        newLoc = (loc[0] + 1, loc[1])
+      else:
+        newLoc = (loc[0], loc[1] + 1)
+    elif dir == 2:
+      if maze[loc[0]][loc[1] - 1] == 1:
+        dir += 1
+        newLoc = (loc[0], loc[1] - 1)
+      else:
+        newLoc = (loc[0] + 1, loc[1])
+    elif dir == 3:
+      if maze[loc[0] - 1][loc[1]] == 1:
+        dir += 1
+        newLoc = (loc[0] - 1, loc[1])
+      else:
+        newLoc = (loc[0], loc[1] - 1)
+    elif dir == 4:
+      if maze[loc[0]][loc[1] + 1] == 1:
+        dir = 1
+        newLoc = (loc[0], loc[1] + 1)
+      else:
+        newLoc = (loc[0] - 1, loc[1])
+
+    if maze[newLoc[0]][newLoc[1]] != 1 and maze[newLoc[0]][newLoc[1]] != 5:
+      dir = dir - 1
+      if dir < 0:
+        dir = 4
+      newLoc = loc
+    elif maze[newLoc[0]][newLoc[1]] == 1:
+      maze[newLoc[0]][newLoc[1]] = 6
+      maze[loc[0]][loc[1]] = 1
+
+    return maze, newLoc, dir, False
+
+  start = np.where(maze == 4)[0][0], 0
+  maze[start[0]][start[1]] = 6 
+
+  printMaze(maze)
+  time.sleep(1.0)
+
+  mv = move(start, 1, maze)
+  maze = mv[0].copy()
+  while (mv[3] != True):
+    mv = move(mv[1], mv[2], maze)
+    maze = mv[0].copy()
+
+    printMaze(maze)
+
+    time.sleep(0.1)
+
 
 def main():
     # get command line arguments and generate the maze
     width = int(sys.argv[2])
     height = int(sys.argv[1])
-    maze = generate_maze(width, height)
 
-    printMaze(maze)
+    while (True):
+      maze = generate_maze(width, height)
+      naiveSolveMaze(maze)
+
+      print("Solved Maze.")
+      time.sleep(2.0)
 
 if __name__ == "__main__":
     main()
