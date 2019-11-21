@@ -49,31 +49,34 @@ def generate_maze(n, m):
     if p != q:
       cells[p] = q
 
-  # initialise the two types of border
-  vertBordersStart = np.zeros((n + 3,), dtype=int)
-  vertBordersEnd = vertBordersStart.copy()
-  vertBordersStart[random.randint(1, n // 2) * 2 - 1] = 4 # Create entrance
-  vertBordersEnd[random.randint(1, n // 2) * 2 - 1] = 5 # Create exit
-
+  # initialise the vertical borders
+  vertBordersLeft = np.zeros((n + 3,), dtype=int)
+  vertBordersRight = vertBordersLeft.copy()
+  vertBordersLeft[random.randint(1, n // 2) * 2 - 1] = 6 # Create entrance where agent starts
+  vertBordersRight[random.randint(1, n // 2) * 2 - 1] = 5 # Create exit
+  
+  # initialise the horizontal borders
   horiBorders = np.zeros((m + 1,), dtype=int)
 
   # pad maze with walls
   maze = np.concatenate(([horiBorders], maze), axis=0)
   maze = np.concatenate((maze, [horiBorders]), axis=0)
-  maze = np.insert(maze, 0, vertBordersStart, axis=1)
-  maze = np.insert(maze, len(maze[0]), vertBordersEnd, axis=1)
+  maze = np.insert(maze, 0, vertBordersLeft, axis=1)
+  maze = np.insert(maze, len(maze[0]), vertBordersRight, axis=1)
 
   return maze
 
 def naiveSolveMaze (maze):
   def move(loc, dir, maze):
     newLoc = loc
-
+    
+    # edge case for when maze is solved
     if (maze[loc[0]][loc[1] + 1]) == 5:
       maze[loc[0]][loc[1] + 1] = 6
       maze[loc[0]][loc[1]] = 1
       return maze, loc, dir, True
     
+    # attempt to turn right, if it's a wall go forwards instead
     if dir == 1:
       if maze[loc[0] + 1][loc[1]] == 1:
         dir += 1
@@ -98,50 +101,50 @@ def naiveSolveMaze (maze):
         newLoc = (loc[0], loc[1] + 1)
       else:
         newLoc = (loc[0] - 1, loc[1])
-
+    
+    # if not possible to move into new spot (going forwards) then set previous spot and turn right to try and find a new rooute
     if maze[newLoc[0]][newLoc[1]] != 1 and maze[newLoc[0]][newLoc[1]] != 5:
       dir = dir - 1
+      # wrap dir around
       if dir < 0:
         dir = 4
       newLoc = loc
+    # change location of agent in maze state
     elif maze[newLoc[0]][newLoc[1]] == 1:
       maze[newLoc[0]][newLoc[1]] = 6
       maze[loc[0]][loc[1]] = 1
 
     return maze, newLoc, dir, False
 
-  i = 1
-
-  start = np.where(maze == 4)[0][0], 0
-  maze[start[0]][start[1]] = 6 
-
   printMaze(maze)
   time.sleep(1.0)
-
-  mv = move(start, 1, maze)
-  maze = mv[0].copy()
+  
+  # individual maze game loop set up
+  i = 1
+  mv = move((np.where(maze == 6)[0][0], 0), 1, maze)
+  maze = mv[0]
   while (mv[3] != True):
     mv = move(mv[1], mv[2], maze)
-    maze = mv[0].copy()
+    maze = mv[0]
 
     printMaze(maze)
-    
-    i += 1
-
     time.sleep(0.1)
+    i += 1
   
   print("Solved Maze in", i, "steps.")
 
-
 def main():
     # get command line arguments and generate the maze
-    width = int(sys.argv[2])
-    height = int(sys.argv[1])
-
+    if len(sys.argv) < 3:
+      width, height = 10, 10
+    else:
+      width, height = int(sys.argv[1]), int(sys.argv[2])
+    
+    # main game loop thing that runs the game infinitely
     while (True):
       maze = generate_maze(width, height)
       naiveSolveMaze(maze)
-
+      # display solved maze for two seconds
       time.sleep(2.0)
 
 if __name__ == "__main__":
