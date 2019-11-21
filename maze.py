@@ -110,6 +110,8 @@ def naiveSolveMaze (maze):
 
     return maze, newLoc, dir, False
 
+  i = 1
+
   start = np.where(maze == 4)[0][0], 0
   maze[start[0]][start[1]] = 6 
 
@@ -123,8 +125,12 @@ def naiveSolveMaze (maze):
     maze = mv[0].copy()
 
     printMaze(maze)
+    
+    i += 1
 
     time.sleep(0.1)
+  
+  print("Solved Maze in", i, "steps.")
 
 
 def main():
@@ -136,7 +142,6 @@ def main():
       maze = generate_maze(width, height)
       naiveSolveMaze(maze)
 
-      print("Solved Maze.")
       time.sleep(2.0)
 
 if __name__ == "__main__":
