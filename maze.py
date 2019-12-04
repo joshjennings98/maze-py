@@ -136,7 +136,7 @@ def naiveSolveMaze (maze):
 def main():
     # get command line arguments and generate the maze
     if len(sys.argv) < 3:
-      width, height = 10, 10
+      width, height = 32, 56
     else:
       width, height = int(sys.argv[1]), int(sys.argv[2])
     
